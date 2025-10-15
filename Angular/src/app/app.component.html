@@ -1,41 +1,140 @@
 <div class="demo-container">
-  <dx-chat
-    [class.chat-disabled]="isDisabled"
-    [dataSource]="dataSource"
-    [reloadOnChange]="false"
-    [showAvatar]="false"
-    [showDayHeaders]="false"
-    [user]="user"
-    height="710"
-    [typingUsers]="(typingUsers$ | async) || []"
-    [alerts]="(alerts$ | async) || []"
-    (onMessageEntered)="onMessageEntered($event)"
-    messageTemplate="messageTemplate"
-  >
+  <dx-chat [class.chat-disabled]="isDisabled"
+           [dataSource]="dataSource"
+           [reloadOnChange]="false"
+           [showAvatar]="false"
+           [showDayHeaders]="false"
+           [user]="user"
+           height="710"
+           [typingUsers]="(typingUsers$ | async) || []"
+           [alerts]="(alerts$ | async) || []"
+           (onMessageEntered)="onMessageEntered($event)"
+
+           messageTemplate="messageTemplate">
     <div *dxTemplate="let data of 'messageTemplate'">
-      <ng-container *ngIf="data.message.text === regenerationText">
-        <span>{{ regenerationText }}</span>
+      <!-- 1) Burbuja: Bienvenida -->
+      <ng-container *ngIf="data.message.type === 'welcome'">
+        <div class="bubble-card">
+          <img class="logo" [src]="vicoLogoUrl" alt="VICO" />
+          <h3>¿Necesitas ayuda?</h3>
+          <p>¡Hola, soy VICO!, tu asistente virtual</p>
+          <p>Bienvenidos al Chat bot de la Supertransporte</p>
+          <p>Te invito primero a diligenciar tus datos básicos para continuar</p>
+        </div>
       </ng-container>
-      <ng-container *ngIf="data.message.text !== regenerationText">
-        <div
-          class="dx-chat-messagebubble-text"
-          [innerHTML]="convertToHtml(data.message)"
-        ></div>
+
+      <!-- 2) Burbuja: Formulario de registro -->
+      <ng-container *ngIf="data.message.type === 'form'">
+        <form [formGroup]="welcomeForm" (ngSubmit)="onWelcomeSubmit()" class="bubble-card form">
+          <div class="form-grid">
+            <label>Nombres y apellidos <input formControlName="nombresApellidos" required /></label>
+            <label>Nombre de la empresa <input formControlName="nombreEmpresa" /></label>
+
+            <label>
+              Tipo de identificación
+              <select formControlName="tipoIdentificacion" required>
+                <option value="" disabled>Seleccione…</option>
+                <option value="1">Cédula de ciudadanía</option>
+                <option value="2">NIT</option>
+                <option value="3">Tarjeta de identidad</option>
+                <option value="4">Pasaporte</option>
+                <option value="5">Otros</option>
+              </select>
+            </label>
+
+            <label>Número de identificación <input formControlName="numeroIdentificacion" required /></label>
+
+            <label>
+              Género
+              <select formControlName="genero">
+                <option value="" disabled>Seleccione…</option>
+                <option value="F">Femenino</option>
+                <option value="M">Masculino</option>
+                <option value="O">Otro / Prefiero no decir</option>
+              </select>
+            </label>
+
+            <label>
+              Departamento
+              <select formControlName="departamentoId" (change)="onDepartmentChange()" required>
+                <option value="" disabled>Seleccione…</option>
+                <option *ngFor="let d of departamentos" [value]="d">{{ d }}</option>
+              </select>
+            </label>
+
+            <label>
+              Municipio
+              <select formControlName="municipioId" [disabled]="municipios.length === 0" required>
+                <option value="" disabled>Seleccione…</option>
+                <option *ngFor="let m of municipios" [value]="m">{{ m }}</option>
+              </select>
+            </label>
+
+            <label>Celular <input formControlName="numeroCelular" type="tel" /></label>
+            <label>Correo electrónico <input formControlName="correoElectronico" type="email" /></label>
+          </div>
+
+          <label class="checkbox">
+            <input type="checkbox" formControlName="acceptTerms" />
+            <span>
+              Acepto términos y condiciones. La información suministrada será utilizada
+              únicamente para fines relacionados con los procesos misionales señalados
+              en los decretos 2409/18 y 2402/19.
+            </span>
+          </label>
+
+          <div class="actions">
+            <button class="btn-primary" type="submit" [disabled]="welcomeForm.invalid">Siguiente</button>
+          </div>
+        </form>
+
+      </ng-container>
+
+      <!-- 3) Burbuja: Opciones rápidas (menú / agente) -->
+      <ng-container *ngIf="data.message.type === 'options'">
+        <div class="bubble-card options">
+          <button class="btn-outline" (click)="sendQuick('Menú principal')">Menú principal</button>
+          <button class="btn-outline" (click)="openAgent()">Hablar con un agente</button>
+        </div>
+      </ng-container>
+
+      <!-- 4) Burbuja: Encuesta -->
+      <ng-container *ngIf="data.message.type === 'survey'">
+        <div class="bubble-card survey">
+          <h4>Ahora cuéntanos tu experiencia con el servicio que acabas de recibir.</h4>
+
+          <div class="survey-row">
+            <p>¿En una escala de 1 a 3 cómo calificas la atención?</p>
+            <div>
+              <button (click)="setSurvey('attention', 1)">Bueno</button>
+              <button (click)="setSurvey('attention', 2)">Aceptable</button>
+              <button (click)="setSurvey('attention', 3)">Mala</button>
+            </div>
+          </div>
+
+          <div class="survey-row">
+            <p>En escala de 1 a 3 ¿qué tan fácil fue?</p>
+            <div>
+              <button (click)="setSurvey('ease', 1)">Muy fácil</button>
+              <button (click)="setSurvey('ease', 2)">Aceptable</button>
+              <button (click)="setSurvey('ease', 3)">Difícil</button>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn-primary" (click)="submitSurvey()" [disabled]="!isSurveyComplete()">Enviar</button>
+          </div>
+
+          <div *ngIf="surveySubmitted" class="thanks">Gracias por confiar en nosotros.</div>
+        </div>
+      </ng-container>
+
+      <!-- 5) Burbuja: Texto normal (mantiene tus botones Copiar/Regenerar) -->
+      <ng-container *ngIf="!data.message.type || data.message.type === 'text'">
+        <div class="dx-chat-messagebubble-text" [innerHTML]="convertToHtml(data.message)"></div>
         <div class="dx-bubble-button-container">
-          <dx-button
-            [icon]="copyButtonIcon"
-            stylingMode="text"
-            hint="Copy"
-            (onClick)="onCopyButtonClick(data.message)"
-          >
-          </dx-button>
-          <dx-button
-            icon="refresh"
-            stylingMode="text"
-            hint="Regenerate"
-            (onClick)="onRegenerateButtonClick()"
-          >
-          </dx-button>
+          <dx-button [icon]="copyButtonIcon" stylingMode="text" hint="Copiar" (onClick)="onCopyButtonClick(data.message)"></dx-button>
+          <dx-button icon="refresh" stylingMode="text" hint="Regenerar" (onClick)="onRegenerateButtonClick()"></dx-button>
         </div>
       </ng-container>
     </div>
