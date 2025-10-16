@@ -10,7 +10,13 @@ export interface ChatResponse {
   threadId?: string | null;
 }
 
-
+export interface EncuestaPayload {
+  threadId: string;
+  usuarioId: number;
+  calificacionAtencion: number;
+  calificacionFacilidad: number;
+  comentariosAdicionales?: string;
+}
 export interface RegistroResponse {
   id: number;
 }
@@ -55,6 +61,9 @@ export class AppService {
   public usuarioId: number | null = null;
   constructor(private http: HttpClient) {
     
+  }
+  enviarEncuesta(payload: EncuestaPayload): Observable<any> {
+    return this.http.post(`${this.API_BASE}/Encuesta`, payload);
   }
   getDepartamentos(): Observable<Departamento[]> {
     return this.http.get<Departamento[]>(`${this.API_BASE}/Usuario/departamentos`);

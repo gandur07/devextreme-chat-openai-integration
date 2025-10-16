@@ -67,6 +67,7 @@ export class AppComponent implements OnInit {
   // ---- Control de interacción ----
   isChatLocked = true; // bloqueado hasta "Siguiente"
   threadId: string | null = null;
+  usuarioId: number | null = null;
   serverMsg: string | null = null;
   serverErr: string | null = null;
   submitting = false;
@@ -226,12 +227,22 @@ export class AppComponent implements OnInit {
           content = (res as any).text;
         }
         content = (content || '').toString().trim();
-
+        
         this.pushMessage({
           type: 'text',
           role: 'assistant',
           text: content || '🤖 (Respuesta vacía)'
         });
+        console.log('Content', content);
+        if (content == "¡Gracias por usar el asistente de la Superintendencia de Transporte! Hasta pronto.") {
+          console.log("Survey triggered");  
+          //this.surveySubmitted = true
+          this.pushMessage({
+            type: 'survey',
+            role: 'system',
+            text: '' // si tu pushMessage obliga 'text', deja string vacío
+          });
+        }
       },
       error: () => {
         this.pushMessage({ type: 'text', role: 'assistant', text: 'Hubo un problema procesando tu mensaje. Intenta nuevamente.' });
@@ -271,10 +282,50 @@ export class AppComponent implements OnInit {
   isSurveyComplete(): boolean {
     return !!this.survey.attention && !!this.survey.ease;
   }
+  //submitSurvey(): void {
+  //  if (!this.isSurveyComplete()) return;
+  //  this.surveySubmitted = true;
+  //}
   submitSurvey(): void {
     if (!this.isSurveyComplete()) return;
-    this.surveySubmitted = true;
+    const thread = this.api.getThreadId() ?? this.threadId ?? '';
+    const userId = this.api.getUsuarioId() ?? this.usuarioId ?? 0;
+    const body1 = {
+      threadId: thread,
+      usuarioId: userId,
+      calificacionAtencion: this.survey.attention as number,
+      calificacionFacilidad: this.survey.ease as number,
+      comentariosAdicionales: ""
+    };
+
+    // Opcional: deshabilitar botón mientras envías
+    this.surveySubmitted = false;
+
+    this.api.enviarEncuesta(body1).subscribe({
+      next: () => {
+        this.surveySubmitted = true;
+
+        // (opcional) agrega un mensaje de confirmación al chat
+        this.pushMessage({
+          type: 'text',
+          role: 'system',
+          text: '¡Gracias por responder la encuesta!'
+        });
+
+        // (opcional) bloquear la burbuja para evitar reenvíos
+        // por ejemplo, podrías cambiar el type a 'survey-closed' o guardar un flag local
+      },
+      error: (err) => {
+        console.error('[Encuesta] Error al enviar:', err);
+        this.pushMessage({
+          type: 'text',
+          role: 'system',
+          text: 'No pudimos guardar tu encuesta. Intenta nuevamente.'
+        });
+      }
+    });
   }
+
 
   // =======================
   // Utilidades timeline
