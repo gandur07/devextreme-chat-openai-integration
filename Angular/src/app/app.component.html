@@ -57,16 +57,28 @@
             <label>
               Departamento
               <select formControlName="departamentoId" (change)="onDepartmentChange()" required>
-                <option value="" disabled>Seleccione…</option>
-                <option *ngFor="let d of departamentos" [value]="d">{{ d }}</option>
+                <option value="" disabled selected>Seleccione…</option>
+                <option *ngFor="let d of departamentos" [value]="d.id">{{ d.nombre }}</option>
               </select>
             </label>
 
-            <label>
-              Municipio
-              <select formControlName="municipioId" [disabled]="municipios.length === 0" required>
-                <option value="" disabled>Seleccione…</option>
-                <option *ngFor="let m of municipios" [value]="m">{{ m }}</option>
+            <!--<label>
+    Municipio
+    <select formControlName="municipioId" [disabled]="municipios.length === 0" required>
+      <option value="" disabled>Seleccione…</option>
+      <option *ngFor="let m of municipios" [value]="m">{{ m }}</option>
+    </select>
+  </label>-->
+            <label class="field">
+              <span>Municipio</span>
+              <select formControlName="municipioId"
+                      [disabled]="loadingMunicipios || !welcomeForm.get('departamentoId')?.value || municipios.length === 0">
+                <option [ngValue]="null" disabled selected>
+                  {{ loadingMunicipios ? 'Cargando…' : 'Seleccione…' }}
+                </option>
+                <option *ngFor="let m of municipios; trackBy: trackById" [ngValue]="m.id">
+                  {{ m.nombre }}
+                </option>
               </select>
             </label>
 

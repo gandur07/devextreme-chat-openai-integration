@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AppService, ChatResponse } from './app.service';
+import { AppService, ChatResponse, Departamento, Municipio, RegistroRequest } from './app.service';
 
 // Tipos de mensajes para el chat
 type MessageKind = 'welcome' | 'form' | 'options' | 'survey' | 'text';
@@ -50,14 +50,16 @@ export class AppComponent implements OnInit {
 
   // ---- Formulario de bienvenida ----
   welcomeForm!: FormGroup;
-  departamentos: string[] = ['Bogotá D.C.', 'Antioquia', 'Valle del Cauca'];
-  mapaMunicipios: { [k: string]: string[] } = {
-    'Bogotá D.C.': ['Bogotá'],
-    'Antioquia': ['Medellín', 'Bello', 'Itagüí'],
-    'Valle del Cauca': ['Cali', 'Palmira', 'Jamundí']
-  };
-  municipios: string[] = [];
-
+  //departamentos: string[] = ['Bogotá D.C.', 'Antioquia', 'Valle del Cauca'];
+  departamentos: Departamento[] = [];
+  //mapaMunicipios: { [k: string]: string[] } = {
+  //  'Bogotá D.C.': ['Bogotá'],
+  //  'Antioquia': ['Medellín', 'Bello', 'Itagüí'],
+  //  'Valle del Cauca': ['Cali', 'Palmira', 'Jamundí']
+  //};
+  //municipios: string[] = [];
+  loadingMunicipios = false;
+  municipios: Municipio[] = [];
   // ---- Encuesta ----
   survey: { attention?: number; ease?: number } = {};
   surveySubmitted = false;
@@ -65,7 +67,9 @@ export class AppComponent implements OnInit {
   // ---- Control de interacción ----
   isChatLocked = true; // bloqueado hasta "Siguiente"
   threadId: string | null = null;
-
+  serverMsg: string | null = null;
+  serverErr: string | null = null;
+  submitting = false;
   constructor(
     private fb: FormBuilder,
     private api: AppService
@@ -76,6 +80,7 @@ export class AppComponent implements OnInit {
     // Mensaje de bienvenida y burbuja con formulario
     this.pushMessage({ type: 'welcome', role: 'system', text: '¡Hola! Antes de empezar, por favor completa este formulario.' });
     this.pushMessage({ type: 'form', role: 'assistant' });
+    this.loadDepartamentos();
   }
 
   // =======================
@@ -96,32 +101,38 @@ export class AppComponent implements OnInit {
     });
   }
 
-
-  onDepartmentChange(): void {
-    // Valor seleccionado del <select> de Departamento (id o nombre, según tu data)
-    const depVal = this.welcomeForm?.get('departamentoId')?.value;
-
-    // Intenta resolver municipios tanto si el mapa está por id (número o string) como por nombre
-    const posiblesClaves = [
-      depVal,                     // p.ej. 3
-      String(depVal),             // "3"
-      (this as any).departamentosNombrePorId?.[depVal] // p.ej. "Bogotá D.C." si tienes este diccionario
-    ].filter(Boolean);
-
-    let lista: string[] = [];
-    for (const k of posiblesClaves) {
-      if (this.mapaMunicipios && this.mapaMunicipios[k]) {
-        lista = this.mapaMunicipios[k];
-        break;
+  private loadDepartamentos(): void {
+    this.api.getDepartamentos().subscribe({
+      next: (res) => {
+        // Ordena alfabéticamente por nombre (opcional)
+        this.departamentos = [...res].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+      },
+      error: (err) => {
+        console.error('Error cargando departamentos', err);
       }
-    }
-
-    this.municipios = Array.isArray(lista) ? lista : [];
-    // Reinicia el municipio seleccionado con el nuevo nombre del control
-    this.welcomeForm?.patchValue({ municipioId: '' });
+    });
   }
 
+
+  onDepartmentChange(): void {
+    const depId = this.welcomeForm.get('departamentoId')?.value;
+    if (!depId) {
+      this.municipios = [];
+      this.welcomeForm.patchValue({ municipioId: null });
+      return;
+    }
+    this.loadingMunicipios = true;
+    this.api.getMunicipios(depId).subscribe({
+      next: (res) => {
+        this.municipios = [...res].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+        this.loadingMunicipios = false;
+      },
+      error: () => (this.loadingMunicipios = false)
+    });
+  }
+  trackById(_: number, item: { id: number }) { return item.id; }
   onWelcomeSubmit(): void {
+    this.serverMsg = this.serverErr = null;
     if (!this.welcomeForm || this.welcomeForm.invalid) return;
 
     // Desbloquear chat
@@ -129,6 +140,39 @@ export class AppComponent implements OnInit {
 
     // Quitar la burbuja del formulario
     this.removeFirstOfType('form');
+
+    // Toma TODOS los valores…
+    const v = this.welcomeForm.getRawValue();
+
+    // …pero arma el payload SOLO con los campos que la API espera
+    const payload = {
+      nombresApellidos: v.nombresApellidos,
+      nombreEmpresa: v.nombreEmpresa,
+      tipoIdentificacion: Number(v.tipoIdentificacion), // ← número
+      numeroIdentificacion: String(v.numeroIdentificacion),
+      genero: v.genero,                                  // si es enum y backend espera número, convierte igual
+      municipioId: Number(v.municipioId),                // número
+      numeroCelular: String(v.numeroCelular),
+      correoElectronico: v.correoElectronico
+    };
+
+
+
+
+    this.api.registrarUsuario(payload).subscribe({
+      next: (res: any) => {
+        // res será string si responseType:'text'
+        this.serverMsg = typeof res === 'string' ? res : 'Registro exitoso.';
+        this.submitting = false;
+        // Si quieres limpiar el form:
+        // this.welcomeForm.reset();
+      },
+      error: (err) => {
+        this.serverErr = err?.error ? (typeof err.error === 'string' ? err.error : 'Error en el registro.')
+          : 'Error en el registro.';
+        this.submitting = false;
+      }
+    });
     console.log('Profile submitted', this.welcomeForm.value);
     // Confirmación
     var name = this.welcomeForm.value && this.welcomeForm.value.fullName ? this.welcomeForm.value.fullName : '';
@@ -140,6 +184,7 @@ export class AppComponent implements OnInit {
   // Chat
   // =======================
   onMessageEntered(e: any): void {
+    console.log('User message', e);
     var raw = e && e.message ? e.message : '';
     var text = typeof raw === 'string'
       ? raw

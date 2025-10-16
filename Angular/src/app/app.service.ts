@@ -7,19 +7,64 @@ export interface ChatResponse {
   answer?: string;
   message?: string;
   content?: string;
-  threadId?: string | null;   // <- la API devuelve el threadId vigente
+  threadId?: string | null;
+}
+
+export interface Departamento {
+  id: number;
+  nombre: string;
+  codigo: string;
+}
+
+export interface Municipio {
+  id: number;
+  nombre: string;
+  codigo: string;
+  departamentoId: number;
+}
+
+export interface RegistroRequest {
+  nombresApellidos: string;
+  nombreEmpresa: string;
+  tipoIdentificacion: number;   // (int)
+  numeroIdentificacion: string;
+  genero: string;
+  municipioId: number;          // (int)
+  numeroCelular: string;
+  correoElectronico: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AppService {
   private readonly BASE_URL = 'https://localhost:7050/api/AIChat/chat';
+  private readonly API_BASE = 'https://localhost:7050/api';
 
   private profile: any = null;
   // guarda el hilo en memoria + localStorage para persistir
-  private threadId: string | null = localStorage.getItem('ai_thread_id');
+  //private threadId: string | null;// = localStorage.getItem('ai_thread_id');
+  public threadId: string | null = null; 
+  constructor(private http: HttpClient) {
+    
+  }
+  getDepartamentos(): Observable<Departamento[]> {
+    return this.http.get<Departamento[]>(`${this.API_BASE}/Usuario/departamentos`);
+  }
 
-  constructor(private http: HttpClient) { }
-
+  getMunicipios(departamentoId: number) {
+    return this.http.get<Municipio[]>(
+      `${this.API_BASE}/Usuario/departamentos/${departamentoId}/municipios`
+      // Si usas proxy, sería: `/api/Usuario/departamentos/${departamentoId}/municipios`
+    );
+  }
+  registrarUsuario(payload: RegistroRequest) {
+    // Si usas proxy, cambia a '/api/Usuario/registro'
+    return this.http.post(
+      `${this.API_BASE}/Usuario/registro`,
+      payload,
+      { responseType: 'text' } // la API puede devolver text/plain
+    );
+    // Si siempre devolviera JSON, usarías:  { responseType: 'json' }
+  }
   // ---- Perfil / encuesta opcional ----
   saveProfile(p: any) { this.profile = p; }
   getProfile() { return this.profile; }
@@ -46,7 +91,7 @@ export class AppService {
     if (this.threadId) body.threadId = this.threadId;
     if (opts?.profile) body.profile = opts.profile;
     if (opts?.survey) body.survey = opts.survey;
-
+    console.log('Sending to API:', body);
     return this.http.post<ChatResponse>(this.BASE_URL, body).pipe(
       tap((res) => {
         // si el backend devuelve un threadId (nuevo o el mismo), lo persistimos
