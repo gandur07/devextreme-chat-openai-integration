@@ -17,22 +17,8 @@ interface ChatMessage {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  // styleUrls: ['./app.component.css'],
-  // Usa estilos inline para no depender del loader de CSS
-  styles: [`
-    .bubble-card{background:#fff;border:1px solid #eee;border-radius:12px;padding:14px;max-width:520px}
-    .bubble-card.form .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;margin:10px 0}
-    .bubble-card form label{display:flex;flex-direction:column;font-size:14px;gap:6px}
-    .bubble-card input,.bubble-card select{padding:8px 10px;border:1px solid #e1e1e1;border-radius:8px}
-    .bubble-card .checkbox{display:flex;gap:8px;margin-top:8px}
-    .bubble-card .actions{margin-top:10px}
-    .btn-primary{background:#0a6cff;color:#fff;border:0;border-radius:8px;padding:8px 12px;cursor:pointer}
-    .btn-outline{background:#fff;color:#0a6cff;border:1px solid #0a6cff;border-radius:8px;padding:8px 12px;cursor:pointer}
-    .logo{height:48px;margin-bottom:6px}
-    .options{display:flex;gap:8px}
-    .survey .survey-row{margin:10px 0}
-    .thanks{margin-top:8px;color:#2a7a2a;font-weight:600}
-  `]
+  styleUrls: ['./app.component.scss'],
+
 })
 export class AppComponent implements OnInit {
 
