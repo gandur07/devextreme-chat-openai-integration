@@ -10,6 +10,17 @@ export interface ChatResponse {
   threadId?: string | null;
 }
 
+
+export interface RegistroResponse {
+  id: number;
+}
+
+export interface ChatRequest {
+  message: string;
+  threadId: string;   // En el primer mensaje envía '' (vacío)
+  usuarioId: number;  // Id devuelto por /Registro
+}
+
 export interface Departamento {
   id: number;
   nombre: string;
@@ -40,9 +51,8 @@ export class AppService {
   private readonly API_BASE = 'https://localhost:7050/api';
 
   private profile: any = null;
-  // guarda el hilo en memoria + localStorage para persistir
-  //private threadId: string | null;// = localStorage.getItem('ai_thread_id');
-  public threadId: string | null = null; 
+  public threadId: string | null = null;
+  public usuarioId: number | null = null;
   constructor(private http: HttpClient) {
     
   }
@@ -61,7 +71,7 @@ export class AppService {
     return this.http.post(
       `${this.API_BASE}/Usuario/registro`,
       payload,
-      { responseType: 'text' } // la API puede devolver text/plain
+      { responseType: 'json' } // la API puede devolver text/plain
     );
     // Si siempre devolviera JSON, usarías:  { responseType: 'json' }
   }
@@ -81,6 +91,15 @@ export class AppService {
     localStorage.removeItem('ai_thread_id');
   }
 
+  getUsuarioId(): number | null { return this.usuarioId; }
+  setUsuarioId(id: number | null) {
+    console.log('Setting usuarioId:', id);  
+    this.usuarioId = id;
+    if (id != null) sessionStorage.setItem('usuarioId', String(id));
+    else sessionStorage.removeItem('usuarioId');
+  }
+  
+
   // ---- Chat API ----
   chat(
     message: string,
@@ -89,6 +108,7 @@ export class AppService {
     const body: any = { message };
     // solo enviar threadId si existe (primer mensaje puede ir sin él)
     if (this.threadId) body.threadId = this.threadId;
+    if (this.usuarioId != null) body.usuarioId = this.usuarioId;
     if (opts?.profile) body.profile = opts.profile;
     if (opts?.survey) body.survey = opts.survey;
     console.log('Sending to API:', body);

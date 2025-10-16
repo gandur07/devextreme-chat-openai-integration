@@ -161,9 +161,10 @@ export class AppComponent implements OnInit {
 
     this.api.registrarUsuario(payload).subscribe({
       next: (res: any) => {
-        // res será string si responseType:'text'
+        console.log('Registro response', res);
         this.serverMsg = typeof res === 'string' ? res : 'Registro exitoso.';
         this.submitting = false;
+        this.api.setUsuarioId(res.id); 
         // Si quieres limpiar el form:
         // this.welcomeForm.reset();
       },
