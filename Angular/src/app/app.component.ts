@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
   alerts$: any = null;
   regenerationText = '__regen__';
   copyButtonIcon = 'copy';
-
+  tawkUrl = 'https://tawk.to/chat/57ebcf111fd15618f0ceacfc/default';
   // ---- Logo ----
   vicoLogoUrl = 'assets/vico-logo.png';
 
@@ -154,6 +154,7 @@ export class AppComponent implements OnInit {
         this.api.setUsuarioId(res.id); 
         // Si quieres limpiar el form:
         // this.welcomeForm.reset();
+        this.pushMessage({ type: 'text', role: 'assistant', text: '¡Gracias, ' + name + '! Ya puedes hacer tus preguntas.' });
       },
       error: (err) => {
         this.serverErr = err?.error ? (typeof err.error === 'string' ? err.error : 'Error en el registro.')
@@ -254,9 +255,30 @@ export class AppComponent implements OnInit {
     });
   }
 
+  //openAgent(): void {
+  //  if (this.isChatLocked) return;
+  //  this.pushMessage({ type: 'text', role: 'assistant', text: 'Te conecto con un agente humano…' });
+  //}
   openAgent(): void {
     if (this.isChatLocked) return;
-    this.pushMessage({ type: 'text', role: 'assistant', text: 'Te conecto con un agente humano…' });
+
+    // 1) Mensaje al usuario
+    this.pushMessage({
+      type: 'text',
+      role: 'assistant',
+      text: 'Te conecto con un agente humano…'
+    });
+
+    // 2) (Opcional) bloquear el chat para evitar más envíos
+    this.isChatLocked = true;
+
+    // 3) Abrir Tawk en nueva pestaña (seguro con noopener/noreferrer)
+    const win = window.open(this.tawkUrl, '_blank', 'noopener,noreferrer');
+
+    // 4) Fallback: si el popup fue bloqueado, redirige en la misma pestaña
+    //if (!win) {
+    //  window.location.href = this.tawkUrl;
+    //}
   }
 
   // =======================
@@ -297,7 +319,7 @@ export class AppComponent implements OnInit {
           role: 'system',
           text: '¡Gracias por responder la encuesta!'
         });
-
+        this.isChatLocked = true;
         // (opcional) bloquear la burbuja para evitar reenvíos
         // por ejemplo, podrías cambiar el type a 'survey-closed' o guardar un flag local
       },
@@ -378,4 +400,27 @@ export class AppComponent implements OnInit {
   }
   onCopyButtonClick(_m: any): void { }
   onRegenerateButtonClick(): void { }
+
+
+
+
+
+
+
+  // Marca visual del chip seleccionado
+  isSelected(field: 'attention' | 'ease', value: number): boolean {
+    return (this.survey as any)?.[field] === value;
+  }
+
+  // Accesibilidad con teclado (Enter/Espacio selecciona)
+  onChipKeydown(
+    e: KeyboardEvent,
+    field: 'attention' | 'ease',
+    value: number
+  ): void {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      this.setSurvey(field, value);
+    }
+  }
 }

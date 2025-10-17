@@ -73,3 +73,152 @@
   color: #2a7a2a;
   font-weight: 600
 }
+
+
+.bubble-card.survey {
+  --bg: #ffffff;
+  --border: #e8eaef;
+  --shadow: 0 6px 18px rgba(27, 39, 51, 0.07);
+  --text: #1f2937;
+  --muted: #6b7280;
+  --chip-bg: #f3f4f6;
+  --chip-text: #111827;
+  --chip-border: #e5e7eb;
+  --chip-good: #10b981; /* verde */
+  --chip-ok: #f59e0b; /* ámbar */
+  --chip-bad: #ef4444; /* rojo */
+
+  --chip-active-text: #fff;
+  --focus: 0 0 0 3px rgba(59, 130, 246, 0.35); /* azul */
+  --radius: 14px;
+}
+
+/* ====== Tarjeta ====== */
+.bubble-card.survey {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+  color: var(--text);
+  max-width: 680px;
+}
+
+.survey-title {
+  margin: 0 0 10px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.survey-row {
+  margin-top: 14px;
+}
+
+.survey-question {
+  margin: 0 0 10px 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ====== Chips ====== */
+.chip-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  appearance: none;
+  border: 1px solid var(--chip-border);
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.chip:focus {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.chip:hover {
+  transform: translateY(-1px);
+}
+
+/* variantes por “intención” */
+.chip--good.active {
+  background: var(--chip-good);
+  border-color: var(--chip-good);
+  color: var(--chip-active-text);
+}
+
+.chip--ok.active {
+  background: var(--chip-ok);
+  border-color: var(--chip-ok);
+  color: var(--chip-active-text);
+}
+
+.chip--bad.active {
+  background: var(--chip-bad);
+  border-color: var(--chip-bad);
+  color: var(--chip-active-text);
+}
+
+/* ====== Botón Enviar ====== */
+.actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-primary {
+  appearance: none;
+  background: #2563eb; /* azul */
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.32);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ====== Mensaje de gracias ====== */
+.thanks {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* ====== Responsivo ====== */
+@media (max-width: 480px) {
+  .bubble-card.survey {
+    padding: 14px;
+  }
+
+  .chip {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+}

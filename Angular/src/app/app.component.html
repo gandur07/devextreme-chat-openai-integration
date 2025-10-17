@@ -62,13 +62,7 @@
               </select>
             </label>
 
-            <!--<label>
-    Municipio
-    <select formControlName="municipioId" [disabled]="municipios.length === 0" required>
-      <option value="" disabled>Seleccione…</option>
-      <option *ngFor="let m of municipios" [value]="m">{{ m }}</option>
-    </select>
-  </label>-->
+
             <label class="field">
               <span>Municipio</span>
               <select formControlName="municipioId"
@@ -105,41 +99,99 @@
       <!-- 3) Burbuja: Opciones rápidas (menú / agente) -->
       <ng-container *ngIf="data.message.type === 'options'">
         <div class="bubble-card options">
-          <button class="btn-outline" (click)="sendQuick('Menú principal')">Menú principal</button>
+          <!--<button class="btn-outline" (click)="sendQuick('Menú principal')">Menú principal</button>-->
           <button class="btn-outline" (click)="openAgent()">Hablar con un agente</button>
         </div>
       </ng-container>
 
       <!-- 4) Burbuja: Encuesta -->
       <ng-container *ngIf="data.message.type === 'survey'">
-        <div class="bubble-card survey">
-          <h4>Ahora cuéntanos tu experiencia con el servicio que acabas de recibir.</h4>
+        <div class="bubble-card survey" role="group" aria-label="Encuesta de satisfacción">
+          <h4 class="survey-title">Ahora cuéntanos tu experiencia con el servicio que acabas de recibir.</h4>
 
+          <!-- Bloque 1: Atención -->
           <div class="survey-row">
-            <p>¿En una escala de 1 a 3 cómo calificas la atención?</p>
-            <div>
-              <button (click)="setSurvey('attention', 1)">Bueno</button>
-              <button (click)="setSurvey('attention', 2)">Aceptable</button>
-              <button (click)="setSurvey('attention', 3)">Mala</button>
+            <p class="survey-question">¿En una escala de 1 a 3 cómo calificas la atención?</p>
+            <div class="chip-group" role="radiogroup" aria-label="Calificación de atención">
+              <button type="button"
+                      class="chip chip--good"
+                      [class.active]="isSelected('attention', 1)"
+                      (click)="setSurvey('attention', 1)"
+                      (keydown)="onChipKeydown($event, 'attention', 1)"
+                      [attr.aria-pressed]="isSelected('attention', 1)"
+                      tabindex="0">
+                Bueno
+              </button>
+
+              <button type="button"
+                      class="chip chip--ok"
+                      [class.active]="isSelected('attention', 2)"
+                      (click)="setSurvey('attention', 2)"
+                      (keydown)="onChipKeydown($event, 'attention', 2)"
+                      [attr.aria-pressed]="isSelected('attention', 2)"
+                      tabindex="0">
+                Aceptable
+              </button>
+
+              <button type="button"
+                      class="chip chip--bad"
+                      [class.active]="isSelected('attention', 3)"
+                      (click)="setSurvey('attention', 3)"
+                      (keydown)="onChipKeydown($event, 'attention', 3)"
+                      [attr.aria-pressed]="isSelected('attention', 3)"
+                      tabindex="0">
+                Mala
+              </button>
             </div>
           </div>
 
+          <!-- Bloque 2: Facilidad -->
           <div class="survey-row">
-            <p>En escala de 1 a 3 ¿qué tan fácil fue?</p>
-            <div>
-              <button (click)="setSurvey('ease', 1)">Muy fácil</button>
-              <button (click)="setSurvey('ease', 2)">Aceptable</button>
-              <button (click)="setSurvey('ease', 3)">Difícil</button>
+            <p class="survey-question">En escala de 1 a 3 ¿qué tan fácil fue?</p>
+            <div class="chip-group" role="radiogroup" aria-label="Facilidad de uso">
+              <button type="button"
+                      class="chip chip--good"
+                      [class.active]="isSelected('ease', 1)"
+                      (click)="setSurvey('ease', 1)"
+                      (keydown)="onChipKeydown($event, 'ease', 1)"
+                      [attr.aria-pressed]="isSelected('ease', 1)"
+                      tabindex="0">
+                Muy fácil
+              </button>
+
+              <button type="button"
+                      class="chip chip--ok"
+                      [class.active]="isSelected('ease', 2)"
+                      (click)="setSurvey('ease', 2)"
+                      (keydown)="onChipKeydown($event, 'ease', 2)"
+                      [attr.aria-pressed]="isSelected('ease', 2)"
+                      tabindex="0">
+                Aceptable
+              </button>
+
+              <button type="button"
+                      class="chip chip--bad"
+                      [class.active]="isSelected('ease', 3)"
+                      (click)="setSurvey('ease', 3)"
+                      (keydown)="onChipKeydown($event, 'ease', 3)"
+                      [attr.aria-pressed]="isSelected('ease', 3)"
+                      tabindex="0">
+                Difícil
+              </button>
             </div>
           </div>
 
+          <!-- Acciones -->
           <div class="actions">
-            <button class="btn-primary" (click)="submitSurvey()" [disabled]="!isSurveyComplete()">Enviar</button>
+            <button class="btn-primary" (click)="submitSurvey()" [disabled]="!isSurveyComplete()">
+              Enviar
+            </button>
           </div>
 
-          <div *ngIf="surveySubmitted" class="thanks">Gracias por confiar en nosotros.</div>
+          <div *ngIf="surveySubmitted" class="thanks">¡Gracias por confiar en nosotros! ✅</div>
         </div>
       </ng-container>
+
 
       <!-- 5) Burbuja: Texto normal (mantiene tus botones Copiar/Regenerar) -->
       <ng-container *ngIf="!data.message.type || data.message.type === 'text'">
