@@ -1,78 +1,194 @@
-.bubble-card {
+/* ====== Tarjeta base del formulario ====== */
+.bubble-card.form {
   background: #fff;
-  border: 1px solid #eee;
-  border-radius: 12px;
-  padding: 14px;
-  max-width: 520px
+  border: 1px solid #e7ebf0;
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.06);
+  max-width: 820px;
 }
 
-.bubble-card.form .form-grid {
+/* ====== Título ====== */
+.form-title {
+  margin: 0 0 12px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* ====== Grid 12 columnas ====== */
+.form-grid-12 {
+  --gap: 12px;
   display: grid;
-  grid-template-columns: repeat(2,minmax(0,1fr));
-  gap: 10px 12px;
-  margin: 10px 0
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--gap);
 }
 
-.bubble-card form label {
+/* Utilidades de span */
+.span-6 {
+  grid-column: span 6;
+}
+
+.span-12 {
+  grid-column: span 12;
+}
+
+/* ====== Campo ====== */
+.field {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+}
+
+.field > span {
+  font-size: 13px;
+  color: #374151;
+  font-weight: 600;
+}
+
+/* ====== Variables visuales ====== */
+:root {
+  --control-h: 42px;
+  --radius: 10px;
+  --border: #d8dde6;
+  --border-focus: #2563eb;
+  --bg: #fff;
+  --text: #111827;
+  --muted: #6b7280;
+  --invalid: #ef4444;
+}
+
+/* ====== Controles (input/select) ====== */
+.bubble-card.form input,
+.bubble-card.form select {
+  height: var(--control-h);
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
   font-size: 14px;
-  gap: 6px
+  line-height: 1;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.bubble-card input, .bubble-card select {
-  padding: 8px 10px;
-  border: 1px solid #e1e1e1;
-  border-radius: 8px
+.bubble-card.form input::placeholder {
+  color: var(--muted);
 }
 
-.bubble-card .checkbox {
+.bubble-card.form input:focus,
+.bubble-card.form select:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .18);
+}
+
+/* Estado inválido (marca desde el template con .invalid) */
+.bubble-card.form input.invalid,
+.bubble-card.form select.invalid {
+  border-color: var(--invalid);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, .16);
+}
+
+/* ====== Select con flecha consistente ====== */
+.select {
+  position: relative;
+}
+
+.select select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 36px; /* espacio para flecha */
+}
+
+/* Flecha */
+.select::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  transform: translateY(-50%) rotate(45deg);
+  border-right: 2px solid #6b7280;
+  border-bottom: 2px solid #6b7280;
+}
+
+/* ====== Checkbox alineado ====== */
+.checkbox-row {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  align-items: start;
+  gap: 10px;
+  color: #374151;
+  font-size: 13px;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+
+/* ====== Acciones ====== */
+.actions {
   display: flex;
-  gap: 8px;
-  margin-top: 8px
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 2px;
 }
 
-.bubble-card .actions {
-  margin-top: 10px
-}
-
+/* ====== Botones ====== */
 .btn-primary {
-  background: #0a6cff;
+  appearance: none;
+  background: #2563eb;
   color: #fff;
-  border: 0;
-  border-radius: 8px;
-  padding: 8px 12px;
-  cursor: pointer
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, .28);
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: .6;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
 }
 
 .btn-outline {
+  appearance: none;
   background: #fff;
-  color: #0a6cff;
-  border: 1px solid #0a6cff;
-  border-radius: 8px;
-  padding: 8px 12px;
-  cursor: pointer
+  color: #2563eb;
+  border: 1px solid #2563eb;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.logo {
-  height: 48px;
-  margin-bottom: 6px
+/* ====== Responsive ====== */
+@media (max-width: 768px) {
+  .span-6, .span-12 {
+    grid-column: 1 / -1;
+  }
+
+  :root {
+    --control-h: 44px;
+  }
 }
 
-.options {
-  display: flex;
-  gap: 8px
-}
-
-.survey .survey-row {
-  margin: 10px 0
-}
-
-.thanks {
-  margin-top: 8px;
-  color: #2a7a2a;
-  font-weight: 600
-}
 
 
 .bubble-card.survey {

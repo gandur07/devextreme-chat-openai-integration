@@ -13,88 +13,107 @@
            messageTemplate="messageTemplate">
     <div *dxTemplate="let data of 'messageTemplate'">
       <!-- 1) Burbuja: Bienvenida -->
-      <ng-container *ngIf="data.message.type === 'welcome'">
-        <div class="bubble-card">
-          <img class="logo" [src]="vicoLogoUrl" alt="VICO" />
-          <h3>¿Necesitas ayuda?</h3>
-          <p>¡Hola, soy VICO!, tu asistente virtual</p>
-          <p>Bienvenidos al Chat bot de la Supertransporte</p>
-          <p>Te invito primero a diligenciar tus datos básicos para continuar</p>
-        </div>
-      </ng-container>
-
-      <!-- 2) Burbuja: Formulario de registro -->
       <ng-container *ngIf="data.message.type === 'form'">
         <form [formGroup]="welcomeForm" (ngSubmit)="onWelcomeSubmit()" class="bubble-card form">
-          <div class="form-grid">
-            <label>Nombres y apellidos <input formControlName="nombresApellidos" required /></label>
-            <label>Nombre de la empresa <input formControlName="nombreEmpresa" /></label>
 
-            <label>
-              Tipo de identificación
-              <select formControlName="tipoIdentificacion" required>
-                <option value="" disabled>Seleccione…</option>
-                <option value="1">Cédula de ciudadanía</option>
-                <option value="2">NIT</option>
-                <option value="3">Tarjeta de identidad</option>
-                <option value="4">Pasaporte</option>
-                <option value="5">Otros</option>
-              </select>
+          <h4 class="form-title">Datos básicos</h4>
+
+          <div class="form-grid-12">
+            <label class="field span-6">
+              <span>Nombres y apellidos</span>
+              <input formControlName="nombresApellidos" required
+                     [class.invalid]="welcomeForm.get('nombresApellidos')?.invalid && welcomeForm.get('nombresApellidos')?.touched" />
             </label>
 
-            <label>Número de identificación <input formControlName="numeroIdentificacion" required /></label>
-
-            <label>
-              Género
-              <select formControlName="genero">
-                <option value="" disabled>Seleccione…</option>
-                <option value="F">Femenino</option>
-                <option value="M">Masculino</option>
-                <option value="O">Otro / Prefiero no decir</option>
-              </select>
+            <label class="field span-6">
+              <span>Nombre de la empresa</span>
+              <input formControlName="nombreEmpresa" />
             </label>
 
-            <label>
-              Departamento
-              <select formControlName="departamentoId" (change)="onDepartmentChange()" required>
-                <option value="" disabled selected>Seleccione…</option>
-                <option *ngFor="let d of departamentos" [value]="d.id">{{ d.nombre }}</option>
-              </select>
+            <label class="field span-6">
+              <span>Tipo de identificación</span>
+              <div class="select">
+                <select formControlName="tipoIdentificacion" required
+                        [class.invalid]="welcomeForm.get('tipoIdentificacion')?.invalid && welcomeForm.get('tipoIdentificacion')?.touched">
+                  <option [ngValue]="null" disabled>Seleccione…</option>
+                  <option [ngValue]="1">Cédula de ciudadanía</option>
+                  <option [ngValue]="2">NIT</option>
+                  <option [ngValue]="3">Tarjeta de identidad</option>
+                  <option [ngValue]="4">Pasaporte</option>
+                  <option [ngValue]="5">Otros</option>
+                </select>
+              </div>
             </label>
 
+            <label class="field span-6">
+              <span>Número de identificación</span>
+              <input formControlName="numeroIdentificacion" required
+                     [class.invalid]="welcomeForm.get('numeroIdentificacion')?.invalid && welcomeForm.get('numeroIdentificacion')?.touched" />
+            </label>
 
-            <label class="field">
+            <label class="field span-6">
+              <span>Género</span>
+              <div class="select">
+                <select formControlName="genero">
+                  <option [ngValue]="null" disabled>Seleccione…</option>
+                  <option [ngValue]="'F'">Femenino</option>
+                  <option [ngValue]="'M'">Masculino</option>
+                  <option [ngValue]="'O'">Otro / Prefiero no decir</option>
+                </select>
+              </div>
+            </label>
+
+            <label class="field span-6">
+              <span>Departamento</span>
+              <div class="select">
+                <select formControlName="departamentoId" (change)="onDepartmentChange()" required>
+                  <option [ngValue]="null" disabled>Seleccione…</option>
+                  <option *ngFor="let d of departamentos" [ngValue]="d.id">{{ d.nombre }}</option>
+                </select>
+              </div>
+            </label>
+
+            <label class="field span-6">
               <span>Municipio</span>
-              <select formControlName="municipioId"
-                      [disabled]="loadingMunicipios || !welcomeForm.get('departamentoId')?.value || municipios.length === 0">
-                <option [ngValue]="null" disabled selected>
-                  {{ loadingMunicipios ? 'Cargando…' : 'Seleccione…' }}
-                </option>
-                <option *ngFor="let m of municipios; trackBy: trackById" [ngValue]="m.id">
-                  {{ m.nombre }}
-                </option>
-              </select>
+              <div class="select">
+                <select formControlName="municipioId"
+                        [disabled]="loadingMunicipios || !welcomeForm.get('departamentoId')?.value || municipios.length === 0">
+                  <option [ngValue]="null" disabled>
+                    {{ loadingMunicipios ? 'Cargando…' : 'Seleccione…' }}
+                  </option>
+                  <option *ngFor="let m of municipios; trackBy: trackById" [ngValue]="m.id">
+                    {{ m.nombre }}
+                  </option>
+                </select>
+              </div>
             </label>
 
-            <label>Celular <input formControlName="numeroCelular" type="tel" /></label>
-            <label>Correo electrónico <input formControlName="correoElectronico" type="email" /></label>
-          </div>
+            <label class="field span-6">
+              <span>Celular</span>
+              <input formControlName="numeroCelular" type="tel" />
+            </label>
 
-          <label class="checkbox">
-            <input type="checkbox" formControlName="acceptTerms" />
-            <span>
-              Acepto términos y condiciones. La información suministrada será utilizada
-              únicamente para fines relacionados con los procesos misionales señalados
-              en los decretos 2409/18 y 2402/19.
-            </span>
-          </label>
+            <label class="field span-12">
+              <span>Correo electrónico</span>
+              <input formControlName="correoElectronico" type="email" />
+            </label>
 
-          <div class="actions">
-            <button class="btn-primary" type="submit" [disabled]="welcomeForm.invalid">Siguiente</button>
+            <label class="checkbox-row span-12">
+              <input type="checkbox" formControlName="acceptTerms" />
+              <span>
+                Acepto términos y condiciones. La información suministrada será utilizada únicamente
+                para fines relacionados con los procesos misionales señalados en los decretos 2409/18 y 2402/19.
+              </span>
+            </label>
+
+            <div class="actions span-12">
+              <button class="btn-outline" type="button" (click)="welcomeForm.reset()">Limpiar</button>
+              <button class="btn-primary" type="submit" [disabled]="welcomeForm.invalid">Siguiente</button>
+            </div>
           </div>
         </form>
-
       </ng-container>
+
 
       <!-- 3) Burbuja: Opciones rápidas (menú / agente) -->
       <ng-container *ngIf="data.message.type === 'options'">
