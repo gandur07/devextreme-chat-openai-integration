@@ -33,17 +33,12 @@ export class AppComponent implements OnInit {
   tawkUrl = 'https://tawk.to/chat/57ebcf111fd15618f0ceacfc/default';
   // ---- Logo ----
   vicoLogoUrl = 'assets/vico-logo.png';
-
+  mensajeBloqueo = 'Primero completa el formulario y pulsa **Siguiente** para comenzar 🙌';
   // ---- Formulario de bienvenida ----
   welcomeForm!: FormGroup;
-  //departamentos: string[] = ['Bogotá D.C.', 'Antioquia', 'Valle del Cauca'];
+
   departamentos: Departamento[] = [];
-  //mapaMunicipios: { [k: string]: string[] } = {
-  //  'Bogotá D.C.': ['Bogotá'],
-  //  'Antioquia': ['Medellín', 'Bello', 'Itagüí'],
-  //  'Valle del Cauca': ['Cali', 'Palmira', 'Jamundí']
-  //};
-  //municipios: string[] = [];
+
   loadingMunicipios = false;
   municipios: Municipio[] = [];
   // ---- Encuesta ----
@@ -189,7 +184,8 @@ export class AppComponent implements OnInit {
       this.pushMessage({
         type: 'text',
         role: 'assistant',
-        text: 'Primero completa el formulario y pulsa **Siguiente** para comenzar 🙌'
+        text: this.mensajeBloqueo
+        //text: 'Primero completa el formulario y pulsa **Siguiente** para comenzar 🙌'
       });
       return;
     }
@@ -271,7 +267,7 @@ export class AppComponent implements OnInit {
 
     // 2) (Opcional) bloquear el chat para evitar más envíos
     this.isChatLocked = true;
-
+    this.mensajeBloqueo = 'Debes iniciar una nueva interaccion ya que fuiste transferido a un agente humano';
     // 3) Abrir Tawk en nueva pestaña (seguro con noopener/noreferrer)
     const win = window.open(this.tawkUrl, '_blank', 'noopener,noreferrer');
 
@@ -320,6 +316,7 @@ export class AppComponent implements OnInit {
           text: '¡Gracias por responder la encuesta!'
         });
         this.isChatLocked = true;
+        this.mensajeBloqueo = 'La sesión ha finalizado tras completar la encuesta. ¡Gracias por participar!';
         // (opcional) bloquear la burbuja para evitar reenvíos
         // por ejemplo, podrías cambiar el type a 'survey-closed' o guardar un flag local
       },
